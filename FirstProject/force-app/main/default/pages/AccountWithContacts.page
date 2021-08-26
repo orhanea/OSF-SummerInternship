@@ -23,7 +23,7 @@
             <apex:commandButton value="Search" action="{! searchContact}"/>
         </apex:pageBlock>
         <!--Third Part-->
-        <apex:pageBlock title="Related Contacts">
+        <apex:pageBlock title="Related Contacts" id="myTable">
             <apex:pageBlockTable value="{! contacts}" var="contact">
                 <apex:column value="{! contact.LastName}" headerValue="Name"/>
                 <apex:column value="{! contact.Title}"/>
@@ -33,7 +33,8 @@
                     <apex:commandLink value="Set As Primary"
                                       action="{! setAsPrimary}"
                                       onclick="return confirm('Do you confirm the action?')"
-                                      rendered="{! NOT(contact.Is_Primary_Contact__c)}">
+                                      rendered="{! NOT(contact.Is_Primary_Contact__c)}"
+                                      rerender="myTable">
                         <apex:param name="primaryID" value="{! contact.Id}" assignTo="{! primaryID}"/>
                     </apex:commandLink>
                 </apex:column>    
