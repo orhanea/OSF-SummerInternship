@@ -19,19 +19,23 @@ public with sharing class findContacts {
         this.account = (Account) stdController.getRecord();
     }
 
-     /*
+    /*
     * @author Orhan Emre Anıl
     * @date Aug 21 , 2021
     * @name searchContact
     * @description search for related contacts.
     */
     public void searchContact() {
-        contacts = [
-            SELECT ID, lastName, title, phone, Is_Primary_Contact__c
-            FROM Contact
-            WHERE Accountid = :this.account.ID AND lastName LIKE :'%' + searchField + '%'
-            LIMIT :pageSize  
-        ];
+        try{
+            contacts = [
+                        SELECT ID, lastName, title, phone, Is_Primary_Contact__c
+                        FROM Contact
+                        WHERE Accountid = :this.account.ID AND lastName LIKE :'%' + searchField + '%'
+                        LIMIT :pageSize  
+            ];
+        }catch(Exception e){
+            System.debug('Warning. There is an exception: ' + e.getMessage());         
+        }
     }
 
     /*
