@@ -7,7 +7,7 @@
 global inherited sharing class OverviewOpportunityAmountsBatch implements Database.Batchable<SObject>, Database.Stateful {
     
   private Map<Id, String> primaryEmails;
-	private List<AggregateResult> overviewResult;
+  private List<AggregateResult> overviewResult;
   private String email;
     
 	global OverviewOpportunityAmountsBatch(Map<Id, String> primaryEmails, List<AggregateResult> overviewResult) {
@@ -66,10 +66,10 @@ global inherited sharing class OverviewOpportunityAmountsBatch implements Databa
         
 		List<Messaging.SingleEmailMessage> mails = new List<Messaging.SingleEmailMessage>();
          
-    // Get the value for a related field with the help of keySet().
+                // Get the value for a related field with the help of keySet().
 		for (Id accountId : contents.keySet()) {
             
-      // Retrieve a value from a given key.
+                        // Retrieve a value from a given key.
 			String mailContent = contents.get(accountId); 
 
 			// Close the tag.
@@ -77,9 +77,9 @@ global inherited sharing class OverviewOpportunityAmountsBatch implements Databa
 
 			// Create a new object and add to the list.
 			Messaging.SingleEmailMessage message = new Messaging.SingleEmailMessage();            
-      // Assign the addresses.
+                        // Assign the addresses.
 			message.setToAddresses(new List<string>{primaryEmails.get(accountId)});            
-      // Specify the subject
+                        // Specify the subject
 			message.setSubject('Opportunity Overview');
 			message.setHtmlBody(mailContent);
 			mails.add(message);
