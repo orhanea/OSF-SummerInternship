@@ -1,4 +1,6 @@
 /*
+* **OSF Summer Internship****
+* *****Third Exercise********
 * @author Orhan Emre Anıl
 * @date Aug 28, 2021
 * @name OverviewOpportunityAmountsBatch 
@@ -15,13 +17,24 @@ global inherited sharing class OverviewOpportunityAmountsBatch implements Databa
 		this.overviewResult = overviewResult;
 	}
 
-	global Iterable<SObject> start(Database.BatchableContext batchable) {
-		return overviewResult;
+	global Database.QueryLocator start(Database.BatchableContext batchable) {
+		return Database.getQueryLocator('overviewResult');
 	}
 
 	global void execute(Database.BatchableContext batchable, List<sObject> records) {
+	    try {
+		  primaryContacts = [SELECT ID, AccountId, Email
+			             FROM Contact
+			             WHERE Is_Primary_Contact__c = true];
 
-		System.debug('Total Size of Records : ' + records.size());
+		  // Fill the map object.
+		  for (Contact primary : primaryContacts) {
+		       if (!primaryEmails.containsKey(primary.AccountId)) {
+		           primaryEmails.put(primary.AccountId, primary.Email);
+	               }
+		  } 
+            
+                takeOpportunities();
 
 		// Mount mail contents according to accountIDs.
 		Map<Id, String> contents = getMail(records);
@@ -31,7 +44,31 @@ global inherited sharing class OverviewOpportunityAmountsBatch implements Databa
 
 		// Send.
 		Messaging.sendEmail(mails);
+	    } catch(Exception e) {
+                System.debug('Warning. There is an exception: ' + e.getMessage());
+            }	    
 	}
+		
+        global void takeOpportunities() {
+	    try {
+                  // Searching for who has a primary contact "Used in the WHERE clause".
+		  Set<Id> accountIdSet = primaryEmails.keySet();
+
+		  // Time.
+		  DateTime nowDate = System.now();
+		  Date startDate = Date.newinstance(nowDate.year(), nowDate.month(), 1);
+
+		  overviewResult = [SELECT AccountId, Account.Name AccountName, StageName, format(sum(Amount))SumAmount
+			            FROM Opportunity
+			            WHERE AccountId in :accountIdSet 
+                                    AND (CreatedDate >= :startDate or LastModifiedDate >= :startDate)
+			            GROUP BY AccountId, Account.Name, StageName
+			            ORDER BY AccountId];
+            
+           } catch(Exception e) {	    
+               System.debug('Warning. There is an exception: ' + e.getMessage());
+           }    
+      }	
 
 	private Map<Id, String> getMail(List<sObject> records) {
         
