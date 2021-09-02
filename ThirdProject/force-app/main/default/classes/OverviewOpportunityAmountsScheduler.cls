@@ -9,39 +9,10 @@
 global inherited sharing class OverviewOpportunityAmountsScheduler implements Schedulable {
     
     private Map<Id, String> primaryEmails = new Map<Id, String>();
-    private List<Contact> primaryContacts = new List<Contact>();
     private List<AggregateResult> overviewResult = new List<AggregateResult>();
     
 	global void execute(SchedulableContext context) {
 		try {
-            
-			primaryContacts = [SELECT ID, AccountId, Email
-			                   FROM Contact
-			                   WHERE Is_Primary_Contact__c = true];
-
-			// Fill the map object.
-			for (Contact primary : primaryContacts) {
-				if (!primaryEmails.containsKey(primary.AccountId)){
-					primaryEmails.put(primary.AccountId, primary.Email);
-				}
-			}
-
-			// Searching for who has a primary contact "Used in the WHERE clause".
-			Set<Id> accountIdSet = primaryEmails.keySet();
-
-			// Time.
-			DateTime nowDate = System.now();
-			Date startDate = Date.newinstance(nowDate.year(), nowDate.month(), 1);
-            
-			System.debug('Schedule is starting for: ' + string.valueOfGmt(startDate));
-
-			overviewResult = [SELECT AccountId, Account.Name AccountName, StageName, format(sum(Amount))SumAmount
-			                  FROM Opportunity
-			                  WHERE AccountId in :accountIdSet 
-                              AND (CreatedDate >= :startDate or LastModifiedDate >= :startDate)
-			                  GROUP BY AccountId, Account.Name, StageName
-			                  ORDER BY AccountId];
-
 			// Execute.
 			OverviewOpportunityAmountsBatch batch = new OverviewOpportunityAmountsBatch(primaryEmails, overViewResult);
 			Database.executeBatch(batch);
